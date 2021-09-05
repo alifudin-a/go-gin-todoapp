@@ -15,8 +15,10 @@ func InitRoutes() {
 
 	api := r.Group("/api")
 	v1 := api.Group("/v1")
+	auth := v1.Group("/auth")
 
-	v1.POST("/auth", rest.NewLoginHandler().LoginHandler)
+	auth.POST("/login", rest.NewLoginHandler().LoginHandler)
+	auth.POST("/register", rest.NewRegisterHandler().RegisterHandler)
 
 	r.Run(":" + os.Getenv("APP_PORT"))
 }
