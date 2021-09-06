@@ -19,6 +19,7 @@ func InitRoutes() {
 
 	auth.POST("/login", rest.NewLoginHandler().LoginHandler)
 	auth.POST("/register", rest.NewRegisterHandler().RegisterHandler)
+	auth.PUT("/user_account", rest.NewUpdateUserAccountHandler().UpdateUserAccountHandler)
 
 	r.Run(":" + os.Getenv("APP_PORT"))
 }

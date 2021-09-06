@@ -12,6 +12,8 @@ type AuthService interface {
 	Login(arg LoginParams) (*models.Auth, error)
 	Register(arg RegisterParams) (*models.Auth, error)
 	IsExist(arg IsExistParams) bool
+	UpdateUserAccount(arg UpdateUserAccountParams) (*models.Auth, error)
+	IsNotExist(arg IsNotExistParams) (bool, error)
 }
 
 type service struct{}
@@ -81,4 +83,49 @@ func (*service) IsExist(arg IsExistParams) bool {
 	}
 
 	return false
+}
+
+type IsNotExistParams struct {
+	ID int
+}
+
+func (*service) IsNotExist(arg IsNotExistParams) (bool, error) {
+	var db = database.PG
+	var total int
+
+	err := db.Get(&total, query.IsNotExist, arg.ID)
+	if err != nil {
+		log.Println("[IsNotExist] An error occured: ", err)
+		return false, err
+	}
+
+	if total == 0 {
+		return false, err
+	}
+
+	return true, nil
+}
+
+type UpdateUserAccountParams struct {
+	User models.Auth
+}
+
+func (*service) UpdateUserAccount(arg UpdateUserAccountParams) (*models.Auth, error) {
+	var db = database.PG
+	var user models.Auth
+
+	tx := db.MustBegin()
+	err := tx.QueryRowx(query.UpdateUserAccount, arg.User.Username, arg.User.Password, arg.User.Fullname, arg.User.Email, arg.User.ID).StructScan(&user)
+	if err != nil {
+		tx.Rollback()
+		log.Println("[Update] An error occured: ", err)
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
